@@ -1,0 +1,19 @@
+/**
+  公共样式区
+*/
+/*显示省略号*/
+.ellipsis{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clearFix {
+  zoom: 1;
+  &:after {
+    content: " ";
+    display: block;
+    clear: both;
+  }
+}
+
