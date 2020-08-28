@@ -14,7 +14,7 @@
         mode="single"
         :popover="{
           placement: 'bottom',
-          visibility: 'click' 
+          visibility: 'click'
         }"
       >
         <div class="calendar">
@@ -135,26 +135,54 @@ export default {
       return this.menu[type] ? this.menu[type].io : null;
     },
     getRankList: _.throttle(async function() {
-      let type = this.getIOType(this.curType);
-      let res = await api.getRankList(type, this.curPage, this.date);
-      if (res.status === 0) {
-        let newList = res.data;
-        let artList = JSON.parse(JSON.stringify(this.artList));
-
-        artList.push(...newList);
-        artList = _.uniqBy(artList, "id")
-
-        this.artList = artList;
+      if (this.curPage > 12) {
         this.loading = false;
-        this.curPage++;
-        if (this.curPage > 5) this.finished = true;
+        setTimeout(() => {
+          this.finished = true;
+        }, 4000);
       } else {
-        this.$toast({
-          message: res.msg
-        });
-        this.loading = false;
-        this.error = true;
+        let type = this.getIOType(this.curType);
+        let res = await api.getRankList(type, this.curPage, this.date);
+        if (res.status === 0) {
+          let newList = res.data;
+          let artList = JSON.parse(JSON.stringify(this.artList));
+
+          artList.push(...newList);
+          artList = _.uniqBy(artList, "id")
+
+          this.artList = artList;
+          this.loading = false;
+          this.curPage++;
+          //if (this.curPage > 5) this.finished = true;
+        } else {
+          this.$toast({
+            message: res.msg
+          });
+          this.loading = false;
+          this.error = true;
+        }
       }
+
+      // let type = this.getIOType(this.curType);
+      // let res = await api.getRankList(type, this.curPage, this.date);
+      // if (res.status === 0) {
+      //   let newList = res.data;
+      //   let artList = JSON.parse(JSON.stringify(this.artList));
+      //
+      //   artList.push(...newList);
+      //   artList = _.uniqBy(artList, "id")
+      //
+      //   this.artList = artList;
+      //   this.loading = false;
+      //   this.curPage++;
+      //   if (this.curPage > 5) this.finished = true;
+      // } else {
+      //   this.$toast({
+      //     message: res.msg
+      //   });
+      //   this.loading = false;
+      //   this.error = true;
+      // }
       this.isLoading = false;
     }, 5000),
     odd(list) {

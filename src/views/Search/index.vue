@@ -181,37 +181,75 @@ export default {
       }
     },
     search: _.throttle(async function(val) {
-      val = val || this.keywords;
-      this.keywords__ = val;
-      val = val.trim();
-      if (val === "") {
-        this.keywords = "";
-        this.reset();
-        return;
-      }
-      console.log(val);
-
-      this.setSearchHistory(val);
-
-      let res = await api.search(val, this.curPage);
-      if (res.status === 0) {
-        let newList = res.data;
-        let artList = JSON.parse(JSON.stringify(this.artList));
-
-        artList.push(...newList);
-        artList = _.uniqBy(artList, "id");
-
-        this.artList = artList;
+      if (this.curPage > 24) {
         this.loading = false;
-        this.curPage++;
-        if (this.curPage > 5) this.finished = true;
+        setTimeout(() => {
+          this.finished = true;
+        }, 4000);
       } else {
-        this.$toast({
-          message: res.msg
-        });
-        this.loading = false;
-        this.error = true;
+        val = val || this.keywords;
+        this.keywords__ = val;
+        val = val.trim();
+        if (val === "") {
+          this.keywords = "";
+          this.reset();
+          return;
+        }
+        //console.log(val);
+
+        this.setSearchHistory(val);
+
+        let res = await api.search(val, this.curPage);
+        if (res.status === 0) {
+          let newList = res.data;
+          let artList = JSON.parse(JSON.stringify(this.artList));
+
+          artList.push(...newList);
+          artList = _.uniqBy(artList, "id");
+
+          this.artList = artList;
+          this.loading = false;
+          this.curPage++;
+          // if (this.curPage > 5) this.finished = true;
+        } else {
+          this.$toast({
+            message: res.msg
+          });
+          this.loading = false;
+          this.error = true;
+        }
       }
+      // val = val || this.keywords;
+      // this.keywords__ = val;
+      // val = val.trim();
+      // if (val === "") {
+      //   this.keywords = "";
+      //   this.reset();
+      //   return;
+      // }
+      // //console.log(val);
+      //
+      // this.setSearchHistory(val);
+      //
+      // let res = await api.search(val, this.curPage);
+      // if (res.status === 0) {
+      //   let newList = res.data;
+      //   let artList = JSON.parse(JSON.stringify(this.artList));
+      //
+      //   artList.push(...newList);
+      //   artList = _.uniqBy(artList, "id");
+      //
+      //   this.artList = artList;
+      //   this.loading = false;
+      //   this.curPage++;
+      //   if (this.curPage > 5) this.finished = true;
+      // } else {
+      //   this.$toast({
+      //     message: res.msg
+      //   });
+      //   this.loading = false;
+      //   this.error = true;
+      // }
       this.isLoading = false;
     }, 5000),
     odd(list) {
