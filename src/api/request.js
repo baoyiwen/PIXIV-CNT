@@ -11,7 +11,7 @@ axios.defaults.baseURL = baseURL;
 axios.defaults.timeout = 10000;
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 
-const  get = async (url, params) => {
+export const  get = async (url, params) => {
     try {
         const res = await axios.get(url, {params});
         return new Promise((resolve, reject) => {
@@ -27,7 +27,7 @@ const  get = async (url, params) => {
     }
 };
 
-const post = async (url, data) => {
+export const post = async (url, data) => {
   try {
     const res = await axios.post(url, data).data;
     return new Promise((resolve, reject) => {

@@ -1,7 +1,12 @@
 const path = require('path');
+const autoprefixer = require('autoprefixer');
+const pxtorem = require('postcss-pxtorem');
 
 module.exports = {
-    // publicPath: './', // 基本路径
+    // publicPath: process.env.NODE_ENV === 'production'
+    //     ? '././'
+    //     : '/',
+     publicPath: './', // 基本路径
     // outputDir: 'dist', // 输出文件目录
     // lintOnSave: false, // eslint-loader 是否在保存的时候检查
     // // see https://github.com/vuejs/vue-cli/blob/dev/docs/webpack.md
@@ -19,6 +24,15 @@ module.exports = {
     //             loader: "sass-loader" // 将 Sass 编译成 CSS
     //         }]
     //     }],
+    chainWebpack: config => {
+        config
+            .module
+            .rule('vue')
+            .use('vue-loader')
+            .tap(args => {
+                args.compilerOptions.whitespace = 'preserve'
+            })
+    },
     configureWebpack: (config) => {
         if (process.env.NODE_ENV === 'production') {
             // 为生产环境修改配置...
@@ -44,17 +58,26 @@ module.exports = {
     // css相关配置
     css: {
         extract: true, // 是否使用css分离插件 ExtractTextPlugin
-        sourceMap: false, // 开启 CSS source maps?
+        sourceMap: true, // 开启 CSS source maps?
         loaderOptions: {
             css: {}, // 这里的选项会传递给 css-loader
-            postcss: {},// 这里的选项会传递给 postcss-loader
+            postcss: {
+                plugins: [
+                    autoprefixer(),
+                    pxtorem({
+                        rootValue: 75,
+                        propList: ['*'],
+                        selectorBlackList: ['van']
+                    }),
+                ]
+            },// 这里的选项会传递给 postcss-loader
             sass: {},  // 这里的选项会传递给 sass-loader
         }, // css预设器配置项 详见https://cli.vuejs.org/zh/config/#css-loaderoptions
-        modules: false // 启用 CSS modules for all css / pre-processor files.
+        modules: false ,// 启用 CSS modules for all css / pre-processor files.
     },
     // webpack-dev-server 相关配置
     devServer: {
-        open: true,
+        open: false,
         host: 'localhost', // 允许外部ip访问
         port: 10086, // 端口
         https: false, // 启用https
@@ -64,7 +87,7 @@ module.exports = {
         }, // 错误、警告在页面弹出
         proxy: {
             '/api': {
-                target: 'http://api.avatardata.cn',
+                target: 'https://api.imjad.cn/pixiv/',
                 changeOrigin: true, // 允许websockets跨域
                 // ws: true,
                 pathRewrite: {
@@ -89,4 +112,6 @@ module.exports = {
     //         }]
     //     }],
     // },
+    lintOnSave: false,
+    runtimeCompiler: true,
 }
