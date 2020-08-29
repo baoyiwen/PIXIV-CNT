@@ -117,7 +117,7 @@ export default {
 };
 </script>
 
-<style lang="stylus" scoped>
+<style lang="less" scoped>
 .rank-card {
   .card-box {
     padding: 0 12px;

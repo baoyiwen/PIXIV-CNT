@@ -3,10 +3,11 @@ const autoprefixer = require('autoprefixer');
 const pxtorem = require('postcss-pxtorem');
 
 module.exports = {
-    // publicPath: process.env.NODE_ENV === 'production'
-    //     ? '././'
-    //     : '/',
-     publicPath: './', // 基本路径
+    publicPath: process.env.NODE_ENV === 'production'
+        ? '././'
+        : '/',
+    //publicPath: './', // 基本路径
+    // baseUrl: './',
     // outputDir: 'dist', // 输出文件目录
     // lintOnSave: false, // eslint-loader 是否在保存的时候检查
     // // see https://github.com/vuejs/vue-cli/blob/dev/docs/webpack.md
@@ -114,4 +115,6 @@ module.exports = {
     // },
     lintOnSave: false,
     runtimeCompiler: true,
+    outputDir: 'dist',
+    assetsDir: 'static',
 }

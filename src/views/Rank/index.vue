@@ -215,7 +215,7 @@ export default {
 };
 </script>
 
-<style lang="stylus" scoped>
+<style lang="less" scoped>
 .rank {
   padding-top: 70px;
   height: 100%;

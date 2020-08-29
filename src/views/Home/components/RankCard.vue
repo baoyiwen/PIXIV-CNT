@@ -80,7 +80,7 @@ export default {
 };
 </script>
 
-<style lang="stylus" scoped>
+<style lang="less" scoped>
 .rank-card {
   padding: 0 14px;
   margin-bottom: 24px;

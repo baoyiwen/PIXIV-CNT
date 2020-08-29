@@ -1,5 +1,15 @@
 <template>
   <div class="setting">
+    <van-cell center title="持久化缓存" :label="size.local | bytes">
+      <template #right-icon>
+        <van-button type="primary" size="small" @click="clearCache('local')">清理</van-button>
+      </template>
+    </van-cell>
+    <van-cell center title="运行时缓存" :label="size.session | bytes">
+      <template #right-icon>
+        <van-button type="info" size="small" @click="clearCache('session')">清理</van-button>
+      </template>
+    </van-cell>
     <van-cell center title="R-18作品显示" label="包含裸露内容或性描写">
       <template #right-icon>
         <van-switch :value="currentSETTING.r18" @input="onR18Change($event, 1)" size="24" />
@@ -14,8 +24,9 @@
 </template>
 
 <script>
-import { Cell, Switch, Dialog } from "vant";
+import { Cell, Switch, Dialog, Button } from "vant";
 import { mapState, mapActions } from "vuex";
+import { LocalStorage, SessionStorage } from "@/utils/storage";
 export default {
   name: "Setting",
   data() {
@@ -23,6 +34,10 @@ export default {
       currentSETTING: {
         r18: false,
         r18g: false
+      },
+      size: {
+        local: 0,
+        session: 0
       }
     };
   },
@@ -72,6 +87,37 @@ export default {
         if (type === 2) this.currentSETTING.r18g = checked;
       }*/
     },
+    calcCacheSize() {
+      this.size.local = LocalStorage.size;
+      this.size.session = SessionStorage.size;
+    },
+    clearCache(type) {
+      let showName;
+      switch (type) {
+        case "local":
+          showName = "持久化缓存";
+          break;
+
+        case "session":
+          showName = "运行时缓存";
+          break;
+
+        default:
+          break;
+      }
+      Dialog.confirm({
+        message: `确定要清理${showName}吗？清理后将重新从网络加载相关内容`,
+        confirmButtonColor: "black",
+        cancelButtonColor: "#1989fa",
+        closeOnPopstate: true
+      }).then(() => {
+        if (type === "local") LocalStorage.clear();
+        if (type === "session") SessionStorage.clear();
+
+        this.calcCacheSize();
+        this.$toast.success("清理完成");
+      });
+    },
     scroll() {
       let el = document.querySelector(".app-main");
       // el.scrollTo({
@@ -83,14 +129,30 @@ export default {
   },
   mounted() {
     this.currentSETTING = JSON.parse(JSON.stringify(this.SETTING));
+    this.calcCacheSize();
     this.scroll();
   },
   updated() {
     this.saveSETTING(JSON.parse(JSON.stringify(this.currentSETTING)));
   },
+  filters: {
+    bytes(bytes) {
+      bytes = Number(bytes);
+      if (bytes === 0) return "0 B";
+
+      const k = 1024;
+      const dm = 0;
+      const sizes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+    }
+  },
   components: {
     [Cell.name]: Cell,
-    [Switch.name]: Switch
+    [Switch.name]: Switch,
+    [Button.name]: Button
   }
 };
 </script>

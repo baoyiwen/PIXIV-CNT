@@ -1,55 +1,61 @@
-/**
- * 保存API以及初始处理数据
- * */
-import {
-    get
-} from './request';
-import {
-    LocalStorage,
-    SessionStorage
-} from '../utils/storage';
-import moment from "moment";
+import { get } from './request'
+import { LocalStorage, SessionStorage } from '@/utils/storage'
+import moment from 'moment'
 import { Base64 } from 'js-base64';
 
-// 请求地址
-const BASE_URL = '/api';
+const isSupportWebP = (() => {
+    const elem = document.createElement('canvas');
 
-// 使用正则表达式替换图片地址
-const imgProxy = url => url.replace(/i.pximg.net/g, 'pximg.pixiv-viewer.workers.dev');
+    if (elem.getContext && elem.getContext('2d')) {
+        // was able or not to get WebP representation
+        return elem.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+    }
 
-/**
- * 处理数据结构方法
- **/
-const parseIllustV2 = (data) => {
-    /**
-     * @baoyiwen
-     * id: 作品ID
-     * title: 标题
-     * caption:
-     * create_date:
-     * tags:
-     * tools:
-     * width:
-     * height:
-     * x_restrict: 限制 0: 无限制，1：R-18，2：R-18G
-     * total_view:
-     * total_bookmarks:
-     * images:
-     * */
-    let {
+    // very old browser like IE 8, canvas not supported
+    return false;
+})();
+
+const imgProxy = url => {
+    let result = url.replace(/i.pximg.net/g, 'pximg.pixiv-viewer.workers.dev')
+
+    if (!isSupportWebP) {
+        result = result.replace(/_10_webp/g, '_70')
+        result = result.replace(/_webp/g, '')
+    }
+    return result
+}
+
+const parseUser = data => {
+    const { user, profile, workspace } = data
+    let { id, account, name, comment } = user
+    let { background_image_url, birth, birth_day, gender, is_premium, is_using_custom_profile_image, job, total_follow_users, total_mypixiv_users, total_illust_bookmarks_public, total_illusts, twitter_account, twitter_url, webpage } = profile
+
+    return {
         id,
-        title,
-        caption,
-        create_date,
-        tags,
-        tools,
-        width,
-        height,
-        x_restrict,
-        total_view,
-        total_bookmarks
-    } = data;
-    let images = [];
+        account,
+        name,
+        comment,
+        avatar: imgProxy(user.profile_image_urls.medium),
+        bgcover: background_image_url,
+        birth: `${birth}-${birth_day}`,
+        gender,
+        is_premium,
+        is_using_custom_profile_image,
+        job,
+        follow: total_follow_users,
+        friend: total_mypixiv_users,
+        bookmarks: total_illust_bookmarks_public,
+        illusts: total_illusts,
+        twitter_account,
+        twitter_url,
+        webpage,
+        workspace
+    }
+}
+
+const parseIllust = data => {
+    let { id, title, caption, create_date, tags, tools, width, height, x_restrict, total_view, total_bookmarks, type } = data
+    let images = []
 
     if (data.meta_single_page.original_image_url) {
         images.push({
@@ -87,86 +93,12 @@ const parseIllustV2 = (data) => {
         count: data.page_count,
         view: total_view,
         like: total_bookmarks,
-        x_restrict
-    };
-
-    return artwork;
-};
-// 处理数据使得数据符合使用要求(此方法处理v1接口数据)
-const parseIllustV1 = (data) => {
-    /**
-     * @baoyiwen
-     * id: 作品ID
-     * title: 标题
-     * caption: 图片描述
-     * tags: 图片标签
-     * tools:工具
-     * width: 图片宽
-     * height: 图片高
-     * age_limit: 限制 all-age: 无限制，1：R-18，2：R-18G
-     * user: 作者信息
-     * created_time：创建时间
-     * stats： 状态
-     * reuploaded_time：重新分配时间
-     * images:
-     * */
-    let {
-        id,
-        title,
-        caption,
-        create_date,
-        tags,
-        tools,
-        width,
-        height,
-        age_limit,
-        total_view,
-        total_bookmarks,
-        pagination,
-    } = data;
-    let images = [];
-    if (data.meta_single_page.original_image_url) {
-        images.push({
-            s: imgProxy(data.image_urls.px_128x128),
-            m: imgProxy(data.image_urls.px_480mw),
-            l: imgProxy(data.image_urls.large),
-            // o: imgProxy(data.meta_single_page.original_image_url)
-        });
-    } else {
-        images = data.meta_pages.map(data => {
-            return {
-                s: imgProxy(data.image_urls.square_medium),
-                m: imgProxy(data.image_urls.medium),
-                l: imgProxy(data.image_urls.large),
-                // o: imgProxy(data.image_urls.original)
-            }
-        });
-    };
-
-    const artwork = {
-        id,
-        title,
-        caption,
-        author: {
-            id: data.user.id,
-            name: data.user.name,
-            avatar: imgProxy(data.user.profile_image_urls.medium)
-        },
-        created: create_date,
-        images,
-        tags,
-        tools,
-        width,
-        height,
-        count: data.page_count,
-        view: total_view,
-        like: total_bookmarks,
-        age_limit,
-        pagination
-    };
+        x_restrict,
+        type
+    }
 
     return artwork
-};
+}
 
 const api = {
     /**
@@ -269,7 +201,7 @@ const api = {
             }
 
             relatedList = data.map(art => {
-                return parseIllustV2(art)
+                return parseIllust(art)
             })
 
             SessionStorage.set(`relatedList_${id}_p${page}`, relatedList, 60 * 60 * 3)
@@ -315,7 +247,7 @@ const api = {
             }
 
             rankList = data.map(art => {
-                return parseIllustV2(art)
+                return parseIllust(art)
             })
 
             SessionStorage.set(`rankList_${mode}_${date}_${page}`, rankList, 60 * 60 * 24)
@@ -356,8 +288,9 @@ const api = {
                     msg: '未知错误'
                 }
             }
+
             searchList = data.map(art => {
-                return parseIllustV2(art)
+                return parseIllust(art)
             })
 
             SessionStorage.set(key, searchList, 60 * 60 * 24)
@@ -397,7 +330,7 @@ const api = {
                 }
             }
 
-            artwork = parseIllustV2(data)
+            artwork = parseIllust(data)
 
             LocalStorage.set(`artwork_${id}`, artwork)
         } else {
@@ -406,6 +339,40 @@ const api = {
 
 
         return { status: 0, data: artwork }
+    },
+
+    /**
+     *
+     * @param {Number} id 作品ID
+     */
+    async ugoiraMetadata(id) {
+        let ugoira
+        if (!LocalStorage.has(`ugoira_${id}`)) {
+
+            let res = await get('/v2/', {
+                type: 'ugoira_metadata',
+                id
+            })
+
+            if (res.error) {
+                return {
+                    status: -1,
+                    msg: res.error.user_message || res.error.message
+                }
+            } else {
+                ugoira = {
+                    zip: imgProxy(res.ugoira_metadata.zip_urls.medium),
+                    frames: res.ugoira_metadata.frames
+                }
+            }
+
+            LocalStorage.set(`ugoira_${id}`, ugoira)
+        } else {
+            ugoira = LocalStorage.get(`ugoira_${id}`)
+        }
+
+
+        return { status: 0, data: ugoira }
     },
 
     /**
@@ -427,7 +394,7 @@ const api = {
                     msg: res.error.user_message || res.error.message
                 }
             } else {
-                memberInfo = res
+                memberInfo = parseUser(res)
             }
 
             LocalStorage.set(`memberInfo_${id}`, memberInfo)
@@ -442,17 +409,19 @@ const api = {
     /**
      *
      * @param {Number} id 画师ID
+     * @param {Number} page 页数
      */
-    async getMemberArtwork(id) {
+    async getMemberArtwork(id, page) {
         let memberArtwork
-        if (!LocalStorage.has(`memberArtwork_${id}`)) {
+        if (!LocalStorage.has(`memberArtwork_${id}_p${page}`)) {
 
             let res = await get('/v2/', {
                 type: 'member_illust',
-                id
+                id,
+                page
             })
 
-            let data;
+            let data
             if (res.illusts) {
                 data = res.illusts
             } else if (res.error) {
@@ -468,15 +437,59 @@ const api = {
             }
 
             memberArtwork = data.map(art => {
-                return parseIllustV2(art)
+                return parseIllust(art)
             })
 
-            LocalStorage.set(`memberArtwork_${id}`, memberArtwork)
+            LocalStorage.set(`memberArtwork_${id}_p${page}`, memberArtwork)
         } else {
-            memberArtwork = LocalStorage.get(`memberArtwork_${id}`)
+            memberArtwork = LocalStorage.get(`memberArtwork_${id}_p${page}`)
         }
 
         return { status: 0, data: memberArtwork }
+    },
+
+    /**
+     *
+     * @param {Number} id 画师ID
+     * @param {Number} max_bookmark_id max_bookmark_id
+     */
+    async getMemberFavorite(id, max_bookmark_id) {
+        let memberFavorite = {}
+        if (!LocalStorage.has(`memberFavorite_${id}_m${max_bookmark_id}`)) {
+
+            let res = await get('/v2/', {
+                type: 'favorite',
+                id,
+                max_bookmark_id
+            })
+
+            let data
+            if (res.illusts) {
+                data = res
+            } else if (res.error) {
+                return {
+                    status: -1,
+                    msg: res.error.user_message || res.error.message
+                }
+            } else {
+                return {
+                    status: -1,
+                    msg: '未知错误'
+                }
+            }
+
+            const url = new URLSearchParams(data.next_url)
+            memberFavorite.next = url.get('max_bookmark_id')
+            memberFavorite.illusts = data.illusts.map(art => {
+                return parseIllust(art)
+            })
+
+            LocalStorage.set(`memberFavorite_${id}_m${max_bookmark_id}`, memberFavorite)
+        } else {
+            memberFavorite = LocalStorage.get(`memberFavorite_${id}_m${max_bookmark_id}`)
+        }
+
+        return { status: 0, data: memberFavorite }
     },
 
     async getTags() {
@@ -517,6 +530,5 @@ const api = {
 
         return { status: 0, data: tags }
     }
-};
-
-export default api;
+}
+export default api

@@ -11,6 +11,7 @@ import VueAwesomeSwiper from "vue-awesome-swiper";
 import VCalendar from 'v-calendar';
 import 'swiper/swiper-bundle.css'
 import '@/assets/css/base.styl'
+import './polyfill'
 
 Vue.config.productionTip = false;
 Vue.use(Moment);
