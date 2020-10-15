@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import { Cell, Switch, Dialog, Button } from "vant";
+import { Cell, Switch, Button, Dialog } from "vant";
 import { mapState, mapActions } from "vuex";
 import { LocalStorage, SessionStorage } from "@/utils/storage";
 export default {
@@ -46,18 +46,18 @@ export default {
   },
   watch: {
     $route() {
-      this.scroll();
+      this.calcCacheSize();
     }
   },
   methods: {
     onR18Change(checked, type) {
-      Dialog.alert({
-        title: '开发提示',
-        message: '本功能为特殊功能！请确认你所在的地区法律是否允许，再联系开发人员开启。但开启后所出现的任何情况都将由使用者自行承担，与开发人员无关!',
-      }).then(() => {
-        // on close
-      });
-      /*let name;
+      // Dialog.alert({
+      //   title: '开发提示',
+      //   message: '本功能为特殊功能！请确认你所在的地区法律是否允许，再联系开发人员开启。但开启后所出现的任何情况都将由使用者自行承担，与开发人员无关!',
+      // }).then(() => {
+      //   // on close
+      // });
+      let name;
       if (type === 1) name = "R-18";
       if (type === 2) name = "R-18G";
 
@@ -85,7 +85,7 @@ export default {
       } else {
         if (type === 1) this.currentSETTING.r18 = checked;
         if (type === 2) this.currentSETTING.r18g = checked;
-      }*/
+      }
     },
     calcCacheSize() {
       this.size.local = LocalStorage.size;
@@ -118,22 +118,7 @@ export default {
         this.$toast.success("清理完成");
       });
     },
-    scroll() {
-      let el = document.querySelector(".app-main");
-      // el.scrollTo({
-      //   top: el.clientHeight,
-      //   left: 0
-      // });
-    },
     ...mapActions(["saveSETTING"])
-  },
-  mounted() {
-    this.currentSETTING = JSON.parse(JSON.stringify(this.SETTING));
-    this.calcCacheSize();
-    this.scroll();
-  },
-  updated() {
-    this.saveSETTING(JSON.parse(JSON.stringify(this.currentSETTING)));
   },
   filters: {
     bytes(bytes) {
@@ -149,16 +134,22 @@ export default {
       return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
     }
   },
+  mounted() {
+    this.currentSETTING = JSON.parse(JSON.stringify(this.SETTING));
+    this.calcCacheSize();
+  },
+  updated() {
+    this.saveSETTING(JSON.parse(JSON.stringify(this.currentSETTING)));
+  },
   components: {
     [Cell.name]: Cell,
-    [Switch.name]: Switch,
-    [Button.name]: Button
+    [Button.name]: Button,
+    [Switch.name]: Switch
   }
 };
 </script>
 
 <style lang="stylus" scoped>
 .setting {
-  height: 110vh;
 }
 </style>

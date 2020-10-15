@@ -89,6 +89,28 @@ export default {
 
       this.isLoading = false;
     }, 5000),
+    // getRankList: _.throttle(async function() {
+    //   let res = await api.getRankList("day", this.curPage);
+    //   if (res.status === 0) {
+    //     let newList = res.data;
+    //     let artList = JSON.parse(JSON.stringify(this.artList));
+    //
+    //     artList.push(...newList);
+    //     artList = _.uniqBy(artList, "id")
+    //
+    //     this.artList = artList;
+    //     this.loading = false;
+    //     this.curPage++;
+    //     if (this.curPage > 5) this.finished = true;
+    //   } else {
+    //     this.$toast({
+    //       message: res.msg
+    //     });
+    //     this.loading = false;
+    //     this.error = true;
+    //   }
+    //   this.isLoading = false;
+    // }, 5000),
     odd(list) {
       return list.filter((_, index) => (index + 1) % 2);
     },
@@ -117,7 +139,7 @@ export default {
 };
 </script>
 
-<style lang="less" scoped>
+<style lang="stylus" scoped>
 .rank-card {
   .card-box {
     padding: 0 12px;
@@ -205,7 +227,7 @@ export default {
 .daily {
   .artwork-list {
     margin: 0 2px;
-    height: calc(100% - 200px);
+
     .card-box {
       display: flex;
       flex-direction: row;

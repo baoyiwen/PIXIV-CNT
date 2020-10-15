@@ -72,7 +72,7 @@ export default {
         let artList = JSON.parse(JSON.stringify(this.artList));
 
         artList.push(...newList);
-        artList = _.uniqBy(artList, "id");
+        artList = _.uniqBy(artList, "id")
 
         this.artList = artList;
         this.loading = false;
@@ -99,7 +99,7 @@ export default {
     }
   },
   mounted() {
-
+    // this.getLatest();
   },
   components: {
     [Cell.name]: Cell,
@@ -113,7 +113,7 @@ export default {
 };
 </script>
 
-<style lang="less" scoped>
+<style lang="stylus" scoped>
 .rank-card {
   .card-box {
     padding: 0 12px;

@@ -25,7 +25,6 @@ Vue.use(VueAwesomeSwiper);
 Vue.use(VCalendar);
 Vue.component('Icon', Icon);
 
-
 new Vue({
   router,
   store,

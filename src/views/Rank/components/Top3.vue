@@ -40,7 +40,7 @@ export default {
 };
 </script>
 
-<style lang="less" scoped>
+<style lang="stylus" scoped>
 .top3 {
   position: relative;
   display: flex;

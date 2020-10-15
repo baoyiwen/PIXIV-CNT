@@ -68,13 +68,18 @@ import _ from "lodash";
 import api from "@/api";
 export default {
   name: "Rank",
-  computed: {
-    dateNum() {
-      return moment(this.date).date();
-    }
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      document.querySelector(".app-main").scrollTo(0, vm.scrollTop);
+    });
+  },
+  beforeRouteLeave(to, from, next) {
+    this.scrollTop = document.querySelector(".app-main").scrollTop;
+    next();
   },
   data() {
     return {
+      scrollTop: 0,
       minDate: moment("2007-09-13").toDate(),
       maxDate: moment()
         .subtract(2, "days")
@@ -103,6 +108,11 @@ export default {
         "r18-f": { name: "R-18 - 女性向", io: "day_female_r18", x: true }
       }
     };
+  },
+  computed: {
+    dateNum() {
+      return moment(this.date).date();
+    }
   },
   watch: {
     $route() {
@@ -185,6 +195,29 @@ export default {
       // }
       this.isLoading = false;
     }, 5000),
+    // getRankList: _.throttle(async function() {
+    //   let type = this.getIOType(this.curType);
+    //   let res = await api.getRankList(type, this.curPage, this.date);
+    //   if (res.status === 0) {
+    //     let newList = res.data;
+    //     let artList = JSON.parse(JSON.stringify(this.artList));
+    //
+    //     artList.push(...newList);
+    //     artList = _.uniqBy(artList, "id");
+    //
+    //     this.artList = artList;
+    //     this.loading = false;
+    //     this.curPage++;
+    //     if (this.curPage > 5) this.finished = true;
+    //   } else {
+    //     this.$toast({
+    //       message: res.msg
+    //     });
+    //     this.loading = false;
+    //     this.error = true;
+    //   }
+    //   this.isLoading = false;
+    // }, 5000),
     odd(list) {
       return list.filter((_, index) => (index + 1) % 2);
     },
@@ -215,10 +248,11 @@ export default {
 };
 </script>
 
-<style lang="less" scoped>
+<style lang="stylus" scoped>
 .rank {
-  padding-top: 70px;
-  height: 100%;
+  padding-top: 100px;
+  padding-top: env(safe-area-inset-top);
+  // height: 100%;
   box-sizing: border-box;
 
   .loading {
@@ -233,10 +267,11 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    top: 0;
+    top: 60px;
+    top: env(safe-area-inset-top);
     width: 750px;
-    height: 118px;
-    padding: 46px 12px 0 12px;
+    height: 100px;
+    padding: 0 12px;
     box-sizing: border-box;
     background: #fff;
     z-index: 1;
@@ -263,7 +298,7 @@ export default {
     }
 
     ::v-deep .vc-popover-content-wrapper {
-      top: 120px !important;
+      top: 90px !important;
       left: auto !important;
       right: 14px;
       transform: none !important;

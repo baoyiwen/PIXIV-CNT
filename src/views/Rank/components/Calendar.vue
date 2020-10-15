@@ -31,7 +31,7 @@ export default {
 };
 </script>
 
-<style lang="less" scoped>
+<style lang="stylus" scoped>
 .calendar {
   position: relative;
   width: 60px;

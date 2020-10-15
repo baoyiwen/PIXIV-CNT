@@ -18,6 +18,10 @@
               <div>查看更多</div>
             </div>
           </ImageSlide>
+          <!-- <router-link class="rank" :to="{name: 'Rank'}">
+            查看更多
+            <van-icon name="arrow" />
+          </router-link>-->
         </van-swipe-item>
       </van-swipe>
     </div>
@@ -80,7 +84,7 @@ export default {
 };
 </script>
 
-<style lang="less" scoped>
+<style lang="stylus" scoped>
 .rank-card {
   padding: 0 14px;
   margin-bottom: 24px;

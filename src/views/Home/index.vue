@@ -31,7 +31,7 @@ export default {
 };
 </script>
 
-<style lang="less" scoped>
+<style lang="stylus" scoped>
 .home {
   // padding-top: 50px;
 }
